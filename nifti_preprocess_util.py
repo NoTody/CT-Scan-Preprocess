@@ -1,5 +1,4 @@
 import skimage.transform as skTrans
-import pydicom as dicom
 import matplotlib.pylab as plt
 import glob
 
@@ -20,26 +19,26 @@ import SimpleITK as sitk
 def preprocess(FilePath, OutPath, desired_spacing, desired_size):
     # convert all dicom in one scan to single nifti file
     nifti_img = dicom_to_nifti(FilePath, OutPath)
-    
+
     # Windowing
     window_low, window_high = dcm_display_util.get_window('lung')
     print(f"Window Low: {window_low}, Window High: {window_high}")
-    
+
     # Windowing + Pixel Range Linear Transformation (0-255)
     nifti_img = sitk.IntensityWindowing(nifti_img, window_low, window_high, 0, 255)
-    
+
     # Adjust Voxel Spacing
     nifti_img = spacing_resample(nifti_img, desired_spacing, desired_size)
-    
+
     # Adjust Shape
     new_arr = skTrans.resize(sitk.GetArrayFromImage(nifti_img), desired_size, order=1, preserve_range=True)
     nifti_img = sitk.GetImageFromArray(new_arr)
-        
+
     print(f"Resampled Spacing: {nifti_img.GetSpacing()}, Resampled Size: {nifti_img.GetSize()}")
-    
+
     print(f"Writing NIfTI to file {OutPath} ...")
     sitk.WriteImage(nifti_img, OutPath)
-    
+
     return nifti_img
 
 
@@ -56,9 +55,9 @@ def dicom_to_nifti(FilePath, OutPath):
     image = reader.Execute()
 
     size = image.GetSize()
-    
+
     print("Image size:", size[0], size[1], size[2])
-    
+
     return image
 
 
